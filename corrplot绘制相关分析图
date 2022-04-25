@@ -1,0 +1,90 @@
+#设置文件路径
+setwd("D:\\R\\相关分析")
+getwd()
+
+#安装与调用包
+#install.packages("corrplot")
+library(corrplot)
+
+#读取示例数据
+demo<-read.csv("示例数据.csv",header = T)
+cor<-cor(demo)
+
+#7种可视化表达   method="circle", "square", "ellipse", "pie", "color", "shade", "number"
+corrplot(cor) #默认method=circle
+corrplot(cor, method = "circle") #圆形，面积表示相应相关系数的绝对值
+corrplot(cor, method = "square") #方块，面积表示相应相关系数的绝对值
+corrplot(cor, method = "ellipse") #椭圆，椭圆的偏心率参数化地缩放到相关值
+corrplot(cor, method = "pie") #饼状图，顺时针填充正值，逆时针填充负值
+corrplot(cor, method = "color") #色彩图，大小相同的正方形，颜色不同
+corrplot(cor, method = "shade") #类似色彩图，但负系数字形带有阴影
+corrplot(cor, method = "number") #显示相关系数，不同颜色的系数数字
+
+
+
+#4种排序方法  order= "AOE", "FPC", "hclust", "alphabet"；
+corrplot(cor,order = 'AOE') #"AOE" 是指按特征向量的角度排序
+corrplot(cor,order = 'FPC') #"FPC" 是按照 first principal component 的顺序排序
+corrplot(cor,order = 'hclust')#"hclust"是按照分层聚类的结果排序
+corrplot(cor,order = 'hclust',addrect = 2) #addrect是添加分组矩形，可自定义分组类，类似于平时热图的kmean分组方式。用于表现研究对象可分类的特点，方便继续分类讨论或研究
+corrplot(cor,order = 'alphabet') #"alphabet"按照名称字母顺序排序
+
+
+
+#3种布局   type='full'，'upper'和'lower'
+corrplot(cor, type = 'full')   #默认 type = 'full'
+corrplot(cor, type = 'lower')  #设置下三角
+corrplot(cor, type = 'upper')  #设置上三角的可视化
+
+
+#corrplot.mixed()混合可视化风格，也就是上三角和下三角用不用的方式显示，上下分别可以设置7种可视化中的任意一种
+corrplot.mixed(cor, lower = 'number', upper = 'pie')
+corrplot.mixed(cor, lower = 'circle', upper = 'square')
+corrplot.mixed(cor, lower = 'number', upper = 'circle')
+
+
+#显示p值
+#使用cor.mtest做显著性检验；
+res1 <- cor.mtest(cor, conf.level = .95)  #0.05水平
+corrplot.mixed(cor, lower = 'number', upper = 'circle',p.mat = res1$p,sig.level = 0.05)
+
+
+#############完整的示例#################
+#设置文件路径
+setwd("D:\\R\\相关分析")
+getwd()
+
+#安装与调用包
+#install.packages("corrplot")
+library(corrplot)
+
+#读取示例数据
+demo<-read.csv("示例数据.csv",header = T)
+cor<-cor(demo)
+
+#显著性检验
+res1 <- cor.mtest(bio, conf.level = .95)  #0.05水平
+#翻转颜色 正相关为红色，负相关为蓝色
+b2p2 <- colorRampPalette(c("darkblue", "white","red"))
+
+#导出pdf和jpeg两种格式的文件
+
+pdf('相关分析结果.pdf',width = 6,height = 6) #设置pdf的格式
+corrplot.mixed(cor,  
+               lower.col = "black", number.cex =0.8,
+               upper.col = b2p2(50),#上三角的颜色
+               tl.col = "black", tl.cex=0.8,
+               p.mat = res1$p, sig.level = .05, #显示显著性水平
+               pch.cex = 0.8, pch.col = "blue") #显著性的显示颜色和大小
+dev.off()
+
+#导出jpeg格式的文件
+jpeg(filename = "相关分析结果.jpg",width =10, height =10, units = "cm", pointsize =10,res =600)  #设置jpeg的格式
+corrplot.mixed(cor, #相关分析 
+               lower.col = "black", number.cex =0.8,#下三角的颜色和大小
+               upper.col = terrain.colors(50),#上三角的颜色，以terrain.colors的形式显示
+               tl.col = "black", tl.cex=0.8,#对角线的颜色和大小
+               #p.mat = res1$p, sig.level = .05, jpeg格式不显示显著性水平
+               #pch.cex = 0.8, pch.col = "blue"
+               ) 
+dev.off()
